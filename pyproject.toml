@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A python tool to decompile J2ME applications into Smali-like format."
 dependencies = [
     "javatools",
+    "PyYAML",
 ]
 
 [project.scripts]

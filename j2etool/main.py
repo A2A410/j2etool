@@ -10,6 +10,7 @@ def main():
     # decode command
     decode_parser = subparsers.add_parser("d", help="Decode/Decompile a JAR file")
     decode_parser.add_argument("jar", help="Path to the JAR file")
+    decode_parser.add_argument("-j", "--jad", help="Optional path to a JAD file")
     decode_parser.add_argument("-o", "--output", help="Output directory")
 
     args = parser.parse_args()
@@ -25,7 +26,7 @@ def main():
             output_dir = os.path.splitext(os.path.basename(jar_path))[0]
 
         print(f"I: Using J2METool to decompile '{jar_path}' to '{output_dir}'")
-        tool = J2METool(jar_path)
+        tool = J2METool(jar_path, jad_path=args.jad)
         tool.decompile(output_dir)
         print("I: Decompilation complete.")
     else:
