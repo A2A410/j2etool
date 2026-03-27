@@ -539,7 +539,7 @@
     .limit locals 7
     ldc 'SL'
     astore_0
-    ldc '/sn8p'
+    ldc '/sn8p'  # resource: res/sn8p
     iconst_1
     aload_0
     invokestatic a->a(Ljava/lang/String;ZLjava/lang/String;)V
@@ -2387,7 +2387,7 @@
 .method public static a()Ljava/lang/String;
     .limit stack 4
     .limit locals 2
-    ldc 'a'
+    ldc 'a'  # resource: res/a
     astore_0
     iconst_0
     istore_1

@@ -25,6 +25,9 @@ class J2METool:
         if self.jad_path and os.path.exists(self.jad_path):
             self.metadata.update(self._parse_manifest(self.jad_path))
 
+        self.resource_paths = set()
+        self.metadata['Resource-Mapping'] = {}
+
         with zipfile.ZipFile(self.jar_path, 'r') as jar:
             # 2. Parse MANIFEST.MF from JAR
             try:
@@ -41,12 +44,45 @@ class J2METool:
             if 'MIDlet-Jar-URL' not in self.metadata:
                 self.metadata['MIDlet-Jar-URL'] = os.path.basename(self.jar_path)
 
-            # 3. Process files
+            # 3. Process files (Pass 1: Resources & Settings Analysis)
+            class_count = 0
+            short_name_classes = 0
+            has_sourcefile = 0
+
+            for file_info in jar.infolist():
+                if file_info.is_dir():
+                    continue
+                if file_info.filename.endswith('.class'):
+                    class_count += 1
+                    if len(os.path.basename(file_info.filename).replace('.class', '')) <= 2:
+                        short_name_classes += 1
+
+                    # Inspect class for settings
+                    try:
+                        class_data = jar.read(file_info.filename)
+                        dis = Disassembler(class_data=class_data)
+                        if dis.cf.get_sourcefile():
+                            has_sourcefile += 1
+                    except:
+                        pass
+                else:
+                    self._extract_resource(jar, file_info, output_dir)
+
+            # Obfuscation & Compiler Detection
+            if class_count > 0:
+                is_obfuscated = (short_name_classes / class_count) > 0.5
+                self.metadata['Obfuscated'] = is_obfuscated
+                if is_obfuscated and has_sourcefile == 0:
+                    self.metadata['Compiler'] = 'ProGuard'
+                elif is_obfuscated:
+                    self.metadata['Compiler'] = 'Generic-Obfuscator'
+                else:
+                    self.metadata['Compiler'] = 'Standard'
+
+            # 3. Process files (Pass 2: Classes)
             for file_info in jar.infolist():
                 if file_info.filename.endswith('.class'):
                     self._decompile_class(jar, file_info, smali_dir)
-                else:
-                    self._extract_resource(jar, file_info, output_dir)
 
         # 4. Save metadata to j2etool.yml
         self._save_metadata(output_dir)
@@ -76,11 +112,13 @@ class J2METool:
 
         with open(jad_path, 'w', encoding='utf-8') as f:
             for key, value in self.metadata.items():
+                if key in ('Resource-Mapping', 'Obfuscated', 'Compiler'):
+                    continue
                 f.write(f"{key}: {value}\n")
 
     def _decompile_class(self, jar, file_info, smali_dir):
         class_data = jar.read(file_info.filename)
-        dis = Disassembler(class_data=class_data)
+        dis = Disassembler(class_data=class_data, resource_paths=self.resource_paths)
         smali_content = dis.disassemble_class()
 
         class_name = dis.cf.pretty_this().replace('.', '/')
@@ -90,15 +128,46 @@ class J2METool:
         with open(output_path, 'w') as f:
             f.write(smali_content)
 
+    def _detect_extension(self, data):
+        if data.startswith(b'\x89PNG\r\n\x1a\n'):
+            return '.png'
+        if data.startswith(b'GIF87a') or data.startswith(b'GIF89a'):
+            return '.gif'
+        if data.startswith(b'MThd'):
+            return '.mid'
+        if data.startswith(b'RIFF') and data[8:12] == b'WAVE':
+            return '.wav'
+        return None
+
     def _extract_resource(self, jar, file_info, output_dir):
         if file_info.is_dir():
             return
 
-        if file_info.filename == 'META-INF/MANIFEST.MF':
+        with jar.open(file_info) as source:
+            data = source.read()
+
+        orig_filename = file_info.filename
+
+        if orig_filename == 'META-INF/MANIFEST.MF':
             dest = os.path.join(output_dir, "original", "META-INF", "MANIFEST.MF")
-        else:
-            dest = os.path.join(output_dir, "res", file_info.filename)
+            os.makedirs(os.path.dirname(dest), exist_ok=True)
+            with open(dest, "wb") as target:
+                target.write(data)
+            return
+
+        ext = self._detect_extension(data)
+
+        fixed_filename = orig_filename
+        if ext and not orig_filename.lower().endswith(ext):
+            # Check if it has a generic extension or none
+            base, old_ext = os.path.splitext(orig_filename)
+            if not old_ext or len(old_ext) > 4 or old_ext.lower() in ('.dat', '.bin', '.data'):
+                fixed_filename = base + ext
+                self.metadata['Resource-Mapping'][orig_filename] = fixed_filename
+
+        dest = os.path.join(output_dir, "res", fixed_filename)
+        self.resource_paths.add("res/" + fixed_filename)
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
-        with jar.open(file_info) as source, open(dest, "wb") as target:
-            shutil.copyfileobj(source, target)
+        with open(dest, "wb") as target:
+            target.write(data)

@@ -270,7 +270,7 @@
     aastore
     dup
     iconst_3
-    ldc 'a'
+    ldc 'a'  # resource: res/a
     aastore
     dup
     iconst_4
@@ -314,7 +314,7 @@
     aastore
     dup
     iconst_2
-    ldc 'a'
+    ldc 'a'  # resource: res/a
     aastore
     dup
     iconst_3
@@ -355,7 +355,7 @@
     anewarray java/lang/String
     dup
     iconst_0
-    ldc 'a'
+    ldc 'a'  # resource: res/a
     aastore
     dup
     iconst_1
