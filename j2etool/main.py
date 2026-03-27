@@ -13,6 +13,10 @@ def main():
     decode_parser.add_argument("-j", "--jad", help="Optional path to a JAD file")
     decode_parser.add_argument("-o", "--output", help="Output directory")
 
+    # test command
+    test_parser = subparsers.add_parser("test", help="Run decompilation on test.jar")
+    test_parser.add_argument("-o", "--output", default="test_output", help="Output directory (default: test_output)")
+
     args = parser.parse_args()
 
     if args.command == "d":
@@ -29,6 +33,17 @@ def main():
         tool = J2METool(jar_path, jad_path=args.jad)
         tool.decompile(output_dir)
         print("I: Decompilation complete.")
+    elif args.command == "test":
+        jar_path = "test.jar"
+        if not os.path.exists(jar_path):
+            print(f"Error: JAR file '{jar_path}' not found")
+            sys.exit(1)
+
+        output_dir = args.output
+        print(f"I: Running test against '{jar_path}' to '{output_dir}'")
+        tool = J2METool(jar_path)
+        tool.decompile(output_dir)
+        print(f"I: Test complete. Results in '{output_dir}'")
     else:
         parser.print_help()
 

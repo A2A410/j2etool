@@ -12,6 +12,14 @@ class Disassembler:
         else:
             raise ValueError("Either class_data or filepath must be provided")
 
+    def _format_arg(self, arg):
+        if isinstance(arg, list):
+            return "[" + ", ".join(self._format_arg(x) for x in arg) + "]"
+        try:
+            return hex(arg)
+        except (TypeError, ValueError):
+            return str(arg)
+
     def format_instruction(self, offset, opcode, args):
         name = opcodes.get_opname_by_code(opcode)
         if not args:
@@ -36,10 +44,14 @@ class Disassembler:
             elif opcode in (opcodes.OP_new, opcodes.OP_checkcast, opcodes.OP_instanceof, opcodes.OP_anewarray):
                 val = self.cf.deref_const(args[0])
                 formatted_args.append(val)
+            elif opcode == opcodes.OP_multianewarray:
+                val = self.cf.deref_const(args[0])
+                formatted_args.append(val)
+                formatted_args.append(hex(args[1]))
             else:
-                formatted_args.extend([hex(a) for a in args])
+                formatted_args.extend(self._format_arg(a) for a in args)
         except Exception:
-            formatted_args.extend([hex(a) for a in args])
+            formatted_args.extend(self._format_arg(a) for a in args)
 
         return f"    {name} {' '.join(formatted_args)}"
 
