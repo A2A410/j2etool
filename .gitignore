@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+HelloWorld.class
+HelloWorld.java
+HelloWorld.jar
+HelloWorld_decompiled/
+HelloWorld_v2/
+META-INF/
