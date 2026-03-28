@@ -15,12 +15,11 @@ class Disassembler:
             raise ValueError("Either class_data or filepath must be provided")
 
     def _format_arg(self, arg):
-        if isinstance(arg, list):
+        if isinstance(arg, (list, tuple)):
             return "[" + ", ".join(self._format_arg(x) for x in arg) + "]"
-        try:
+        if isinstance(arg, int):
             return hex(arg)
-        except (TypeError, ValueError):
-            return str(arg)
+        return str(arg)
 
     def format_instruction(self, offset, opcode, args):
         name = opcodes.get_opname_by_code(opcode)
@@ -40,11 +39,11 @@ class Disassembler:
                 if isinstance(val, str):
                     clean_val = val.lstrip('/')
                     for res_path in self.resource_paths:
-                        # Extract the filename part of the resource path and compare with clean_val
                         # res_path is like 'res/path/to/file.ext'
                         res_filename_with_ext = os.path.basename(res_path)
                         res_filename_no_ext = os.path.splitext(res_filename_with_ext)[0]
 
+                        # Match with or without leading slash and extension
                         if clean_val == res_filename_with_ext or clean_val == res_filename_no_ext:
                             formatted_args.append(f" # resource: {res_path}")
                             break
