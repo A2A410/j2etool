@@ -2,6 +2,7 @@ import os
 import zipfile
 import shutil
 import yaml
+import math
 from .disassembler import Disassembler
 
 class J2METool:
@@ -187,7 +188,6 @@ class J2METool:
             f.write(smali_content)
 
     def _calculate_entropy(self, data):
-        import math
         if not data:
             return 0.0
         entropy = 0
