@@ -89,6 +89,25 @@ class Disassembler:
         lines.append(".end method")
         return lines
 
+    def get_string_constants(self):
+        strings = set()
+        # javatools constant pool constants are accessible via the cpool.constants() generator
+        # and deref_const handles identifying string types.
+        # Constant pool indices start at 1
+        for i in range(1, len(self.cf.cpool.consts)):
+            try:
+                val = self.cf.deref_const(i)
+                # deref_const for a ConstantString returns the string directly.
+                # We want to avoid other types that might return strings but aren't ConstantStrings.
+                # However, javatools' deref_const is quite helpful.
+                # Let's check the tag if we can.
+                tag, _ = self.cf.cpool.consts[i]
+                if tag == 8: # CONSTANT_String
+                    strings.add(val)
+            except:
+                pass
+        return strings
+
     def disassemble_class(self):
         lines = []
 

@@ -27,6 +27,10 @@ class J2METool:
 
         self.resource_paths = set()
         self.metadata['Resource-Mapping'] = {}
+        self.metadata['file_map'] = []
+        self.metadata['nested_archives'] = []
+        self.metadata['Resource-Xref'] = {}
+        self._class_strings = {}
 
         with zipfile.ZipFile(self.jar_path, 'r') as jar:
             # 2. Parse MANIFEST.MF from JAR
@@ -84,11 +88,35 @@ class J2METool:
                 if file_info.filename.endswith('.class'):
                     self._decompile_class(jar, file_info, smali_dir)
 
+        # 4. Generate Resource Xref
+        self._generate_resource_xref(output_dir)
+
         # 4. Save metadata to j2etool.yml
         self._save_metadata(output_dir)
 
         # 5. Generate JAD
         self._generate_jad(output_dir)
+
+        # 6. Print Summary
+        self._print_summary()
+
+    def _print_summary(self):
+        class_count = len(self._class_strings)
+        res_count = len(self.metadata['file_map'])
+        layers = {}
+        for f in self.metadata['file_map']:
+            l = f['assigned_layer']
+            layers[l] = layers.get(l, 0) + 1
+
+        print(f"\nSummary:")
+        print(f"  Classes:    {class_count} disassembled")
+        print(f"  Resources:  {res_count} (res: {layers.get('res', 0)}, assets: {layers.get('assets', 0)}, unknown: {layers.get('unknown', 0)})")
+        print(f"  Obfuscated: {'yes' if self.metadata.get('Obfuscated') else 'no'}")
+        print(f"  Compiler:   {self.metadata.get('Compiler', 'Unknown')}")
+
+        nested_count = len(self.metadata.get('nested_archives', []))
+        if nested_count > 0:
+            print(f"  Nested ZIPs found: {nested_count}")
 
     def _parse_manifest(self, path):
         with open(path, 'r', encoding='utf-8') as f:
@@ -112,9 +140,38 @@ class J2METool:
 
         with open(jad_path, 'w', encoding='utf-8') as f:
             for key, value in self.metadata.items():
-                if key in ('Resource-Mapping', 'Obfuscated', 'Compiler'):
+                if key in ('Resource-Mapping', 'Obfuscated', 'Compiler', 'file_map', 'nested_archives', 'Resource-Xref'):
                     continue
                 f.write(f"{key}: {value}\n")
+
+    def _generate_resource_xref(self, output_dir):
+        xref = {}
+
+        # Build mapping of filenames to their assigned paths
+        filename_to_paths = {}
+        for res_path in self.resource_paths:
+            # res_path is like 'res/path/to/file.ext'
+            fname_with_ext = os.path.basename(res_path)
+            fname_no_ext = os.path.splitext(fname_with_ext)[0]
+
+            # Map both filename and filename without extension to the full path
+            for key in (fname_with_ext, fname_no_ext):
+                if key not in filename_to_paths:
+                    filename_to_paths[key] = set()
+                filename_to_paths[key].add(res_path)
+
+        for class_name, strings in self._class_strings.items():
+            for s in strings:
+                if not isinstance(s, str): continue
+                clean_s = s.lstrip('/')
+                if clean_s in filename_to_paths:
+                    for res_path in filename_to_paths[clean_s]:
+                        if res_path not in xref:
+                            xref[res_path] = set()
+                        xref[res_path].add(class_name)
+
+        # Convert sets to sorted lists for YAML
+        self.metadata['Resource-Xref'] = {k: sorted(list(v)) for k, v in sorted(xref.items())}
 
     def _decompile_class(self, jar, file_info, smali_dir):
         class_data = jar.read(file_info.filename)
@@ -122,11 +179,23 @@ class J2METool:
         smali_content = dis.disassemble_class()
 
         class_name = dis.cf.pretty_this().replace('.', '/')
+        self._class_strings[class_name] = dis.get_string_constants()
         output_path = os.path.join(smali_dir, class_name + ".smali")
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w') as f:
             f.write(smali_content)
+
+    def _calculate_entropy(self, data):
+        import math
+        if not data:
+            return 0.0
+        entropy = 0
+        for x in range(256):
+            p_x = data.count(x) / len(data)
+            if p_x > 0:
+                entropy += - p_x * math.log(p_x, 2)
+        return entropy
 
     def _detect_extension(self, data):
         if data.startswith(b'\x89PNG\r\n\x1a\n'):
@@ -148,13 +217,13 @@ class J2METool:
 
         # Text detection
         try:
-            # Try to see if it's mostly printable text
-            # Some J2ME props files start with \x00 (short length)
             sample = data[:1024]
             if len(sample) > 0:
                 printable = sum(1 for c in sample if 32 <= c <= 126 or c in b'\n\r\t')
-                # Lower threshold for files that might have some binary headers (like J2ME DataInputStream formats)
-                if (printable / len(sample)) > 0.6:
+                entropy = self._calculate_entropy(sample)
+                # If entropy > 7.5, it's likely high-entropy binary (compressed or encrypted)
+                # If it's mostly printable, it's likely text/props
+                if (printable / len(sample)) > 0.6 and entropy < 7.5:
                     return '.props'
         except:
             pass
@@ -177,18 +246,57 @@ class J2METool:
                 target.write(data)
             return
 
+        # Nested ZIP detection
+        if data.startswith(b'PK\x03\x04'):
+            self.metadata['nested_archives'].append(orig_filename)
+
         ext = self._detect_extension(data)
+        entropy = self._calculate_entropy(data)
 
         fixed_filename = orig_filename
-        if ext and not orig_filename.lower().endswith(ext):
-            # Check if it has a generic extension or none
-            base, old_ext = os.path.splitext(orig_filename)
-            if not old_ext or len(old_ext) > 4 or old_ext.lower() in ('.dat', '.bin', '.data'):
+        # Fix: apply detection when original has no extension or generic extension
+        base, old_ext = os.path.splitext(orig_filename)
+        if ext and (not old_ext or len(old_ext) > 4 or old_ext.lower() in ('.dat', '.bin', '.data')):
+            if not orig_filename.lower().endswith(ext):
                 fixed_filename = base + ext
                 self.metadata['Resource-Mapping'][orig_filename] = fixed_filename
 
-        dest = os.path.join(output_dir, "res", fixed_filename)
-        self.resource_paths.add("res/" + fixed_filename)
+        # Layering
+        layer = "unknown"
+        if ext in ('.png', '.gif', '.jpg', '.bmp'):
+            layer = "res"
+        elif ext in ('.mid', '.wav', '.3gp', '.props'):
+            layer = "assets"
+
+        assigned_path = fixed_filename
+        if layer == "unknown":
+            # Subcategorize unknown
+            sample = data[:1024]
+            printable_ratio = 0
+            if len(sample) > 0:
+                printable_ratio = sum(1 for c in sample if 32 <= c <= 126 or c in b'\n\r\t') / len(sample)
+
+            if printable_ratio > 0.8:
+                if sample.strip().startswith(b'<') or sample.strip().startswith(b'{'):
+                    subcat = "structured"
+                else:
+                    subcat = "text"
+            else:
+                subcat = "binary"
+            assigned_path = os.path.join(subcat, fixed_filename)
+
+        dest = os.path.join(output_dir, layer, assigned_path)
+        self.resource_paths.add(layer + "/" + assigned_path)
+
+        # File Map metadata
+        self.metadata['file_map'].append({
+            'original_path': orig_filename,
+            'detected_type': ext[1:] if ext else 'unknown',
+            'assigned_layer': layer,
+            'size_bytes': len(data),
+            'magic_hex': data[:8].hex(),
+            'entropy_score': float(f"{entropy:.3f}")
+        })
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, "wb") as target:
