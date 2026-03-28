@@ -584,11 +584,11 @@
     aastore
     dup
     iconst_2
-    ldc '/gg'
+    ldc '/gg'  # resource: res/gg.png
     aastore
     dup
     iconst_3
-    ldc '/hc'
+    ldc '/hc'  # resource: res/hc.png
     aastore
     astore_1
     iconst_4
@@ -875,7 +875,7 @@
     aconst_null
     putfield i->a:Ljava/io/DataInputStream;
     aload_0
-    ldc '/a'
+    ldc '/a'  # resource: res/a.props
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     invokestatic a->a(Ljava/io/InputStream;)Ljava/io/DataInputStream;
     putfield i->a:Ljava/io/DataInputStream;
@@ -1027,7 +1027,7 @@
     aconst_null
     putfield i->a:Ljava/io/DataInputStream;
     aload_0
-    ldc '/d'
+    ldc '/d'  # resource: res/d
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     invokestatic a->a(Ljava/io/InputStream;)Ljava/io/DataInputStream;
     putfield i->a:Ljava/io/DataInputStream;
@@ -1212,7 +1212,7 @@
     invokevirtual javax/microedition/lcdui/Display->getCurrent()Ljavax/microedition/lcdui/Displayable;
     aload_0
     if_acmpne -0x15
-    ldc '/sn8p'
+    ldc '/sn8p'  # resource: res/sn8p.props
     iconst_1
     ldc 'SO'
     invokestatic a->a(Ljava/lang/String;ZLjava/lang/String;)V
@@ -1421,7 +1421,7 @@
     invokestatic i->a(Ljavax/microedition/midlet/MIDlet;Ljava/util/Hashtable;Ljava/lang/String;I)I
     iastore
     aload_1
-    ldc '/l2'
+    ldc '/l2'  # resource: res/l2.png
     invokestatic javax/microedition/lcdui/Image->createImage(Ljava/lang/String;)Ljavax/microedition/lcdui/Image;
     putfield i->b:Ljavax/microedition/lcdui/Image;
     goto 0x4
@@ -2650,7 +2650,7 @@
     .limit locals 5
     aconst_null
     astore_1
-    ldc '/d0'
+    ldc '/d0'  # resource: res/d0
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     invokestatic a->a(Ljava/io/InputStream;)Ljava/io/DataInputStream;
     astore_1
@@ -2757,7 +2757,7 @@
     .limit locals 6
     aconst_null
     astore_1
-    ldc '/ml'
+    ldc '/ml'  # resource: res/ml
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     invokestatic a->a(Ljava/io/InputStream;)Ljava/io/DataInputStream;
     dup

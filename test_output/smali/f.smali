@@ -25246,7 +25246,7 @@
     aload_0
     getfield f->a:Ljava/io/DataInputStream;
     invokevirtual java/io/DataInputStream->close()V
-    ldc '/dmt'
+    ldc '/dmt'  # resource: res/dmt
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     dup
     astore_1

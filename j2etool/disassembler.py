@@ -1,8 +1,10 @@
+import os
 import javatools
 from javatools import opcodes
 
 class Disassembler:
-    def __init__(self, class_data=None, filepath=None):
+    def __init__(self, class_data=None, filepath=None, resource_paths=None):
+        self.resource_paths = resource_paths or set()
         if filepath:
             self.cf = javatools.unpack_classfile(filepath)
         elif class_data:
@@ -33,6 +35,19 @@ class Disassembler:
             if opcode in (opcodes.OP_ldc, opcodes.OP_ldc_w, opcodes.OP_ldc2_w):
                 val = self.cf.deref_const(args[0])
                 formatted_args.append(repr(val))
+
+                # Add resource hint if it looks like a resource path
+                if isinstance(val, str):
+                    clean_val = val.lstrip('/')
+                    for res_path in self.resource_paths:
+                        # Extract the filename part of the resource path and compare with clean_val
+                        # res_path is like 'res/path/to/file.ext'
+                        res_filename_with_ext = os.path.basename(res_path)
+                        res_filename_no_ext = os.path.splitext(res_filename_with_ext)[0]
+
+                        if clean_val == res_filename_with_ext or clean_val == res_filename_no_ext:
+                            formatted_args.append(f" # resource: {res_path}")
+                            break
             elif opcode in (opcodes.OP_getstatic, opcodes.OP_putstatic, opcodes.OP_getfield, opcodes.OP_putfield):
                 # deref_const returns (class_name, (field_name, field_type))
                 val = self.cf.deref_const(args[0])
