@@ -1,0 +1,249 @@
+Resource-Mapping:
+  a: a.props
+  i0: i0.png
+  f1_0p: f1_0p.png
+  sn8p: sn8p.props
+  l2: l2.png
+  hc: hc.png
+  f3_0p: f3_0p.png
+  f0_0p: f0_0p.png
+  gg: gg.png
+  s0m: s0m.mid
+  f2_0p: f2_0p.png
+file_map:
+- original_path: a
+  detected_type: props
+  assigned_layer: assets
+  size_bytes: 5501
+  magic_hex: 270000ffffffff00
+  entropy_score: 5.986
+- original_path: d
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 164
+  magic_hex: 0020005f00030d0e
+  entropy_score: 3.285
+- original_path: d0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 106134
+  magic_hex: 0878010d01010101
+  entropy_score: 5.419
+- original_path: dmt
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 39
+  magic_hex: 0009001000010203
+  entropy_score: 2.676
+- original_path: i0
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 270898
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.984
+- original_path: m0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 4934
+  magic_hex: 3c2800074801eb02
+  entropy_score: 5.358
+- original_path: m1
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 7078
+  magic_hex: 3c3c000b6702ef01
+  entropy_score: 5.296
+- original_path: m2
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 6611
+  magic_hex: 28500009e1471a01
+  entropy_score: 5.411
+- original_path: m3
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 10097
+  magic_hex: 503c010e6f01eb01
+  entropy_score: 5.64
+- original_path: m4
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 10623
+  magic_hex: 3c50010f0e014801
+  entropy_score: 5.734
+- original_path: m5
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 14014
+  magic_hex: 50500114ca011a02
+  entropy_score: 5.574
+- original_path: mi0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 392
+  magic_hex: 000500091d000104
+  entropy_score: 4.074
+- original_path: mi1
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 363
+  magic_hex: 011800050b000108
+  entropy_score: 4.898
+- original_path: mi2
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 456
+  magic_hex: 022600134a000820
+  entropy_score: 4.619
+- original_path: mi3
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 309
+  magic_hex: 031808100b000918
+  entropy_score: 4.629
+- original_path: mi4
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 690
+  magic_hex: 030300180e000114
+  entropy_score: 4.361
+- original_path: mi5
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 643
+  magic_hex: 043e00344600012f
+  entropy_score: 5.002
+- original_path: mi6
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 683
+  magic_hex: '0531000643000101'
+  entropy_score: 5.026
+- original_path: ml
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 1489
+  magic_hex: '0201560001000200'
+  entropy_score: 5.024
+- original_path: f0_0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 368
+  magic_hex: 5b010002c2ae0700
+  entropy_score: 4.312
+- original_path: f1_0p
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 294
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 6.992
+- original_path: sn8p
+  detected_type: props
+  assigned_layer: assets
+  size_bytes: 32429
+  magic_hex: 00084c534b313a20
+  entropy_score: 4.939
+- original_path: l2
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 44601
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.99
+- original_path: hc
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 1853
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.85
+- original_path: f3_0p
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 194
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 5.724
+- original_path: f1_0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 147
+  magic_hex: '2401000121020001'
+  entropy_score: 3.961
+- original_path: icon.png
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 434
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.237
+- original_path: f0_0p
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 628
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.522
+- original_path: gg
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 2033
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 7.851
+- original_path: f3_0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 42
+  magic_hex: 0a01000130040001
+  entropy_score: 3.016
+- original_path: s0m
+  detected_type: mid
+  assigned_layer: assets
+  size_bytes: 12285
+  magic_hex: 4d54686400000006
+  entropy_score: 5.471
+- original_path: f2_0
+  detected_type: unknown
+  assigned_layer: unknown
+  size_bytes: 42
+  magic_hex: 0a01000130040001
+  entropy_score: 3.016
+- original_path: f2_0p
+  detected_type: png
+  assigned_layer: res
+  size_bytes: 140
+  magic_hex: 89504e470d0a1a0a
+  entropy_score: 5.454
+nested_archives: []
+Resource-Xref:
+  assets/a.props:
+  - a
+  - c
+  - i
+  assets/sn8p.props:
+  - a
+  - i
+  res/gg.png:
+  - i
+  res/hc.png:
+  - i
+  res/l2.png:
+  - i
+  unknown/binary/d:
+  - i
+  unknown/binary/d0:
+  - i
+  unknown/binary/dmt:
+  - f
+  unknown/binary/ml:
+  - i
+MIDlet-1: Art Of War 2 - Global Confederation, icon.png, aow2
+MIDlet-Icon: icon.png
+MIDlet-Name: Art Of War 2 - Global Confederation
+MIDlet-Vendor: '[ANDREW-LVIV] / HeroCraft'
+MIDlet-Version: 1.12.0
+MIDlet-Data-Size: '8192'
+MIDlet-Info-URL: http://www.herocraft.com
+MIDlet-Install-Notify: http://www.herocraft.com/logfile.php
+Manifest-Version: '1.0'
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0
+MIDlet-Jar-Size: '528533'
+MIDlet-Jar-URL: test.jar
+Obfuscated: true
+Compiler: ProGuard

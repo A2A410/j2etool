@@ -150,13 +150,26 @@ class J2METool:
 
         # Build mapping of filenames to their assigned paths
         filename_to_paths = {}
+        # Also map original filenames to fixed paths if they differ
+        orig_to_fixed = self.metadata.get('Resource-Mapping', {})
+
         for res_path in self.resource_paths:
             # res_path is like 'res/path/to/file.ext'
+            # We want to match against what might appear in string constants
             fname_with_ext = os.path.basename(res_path)
             fname_no_ext = os.path.splitext(fname_with_ext)[0]
 
-            # Map both filename and filename without extension to the full path
-            for key in (fname_with_ext, fname_no_ext):
+            keys = {fname_with_ext, fname_no_ext}
+
+            # Find original filename(s) that mapped to this fixed path
+            for orig, fixed in orig_to_fixed.items():
+                if os.path.basename(fixed) == fname_with_ext:
+                    keys.add(orig)
+                    keys.add(os.path.splitext(orig)[0])
+
+            # Map all variations to the full path
+            for key in keys:
+                if not key: continue
                 if key not in filename_to_paths:
                     filename_to_paths[key] = set()
                 filename_to_paths[key].add(res_path)
@@ -198,22 +211,31 @@ class J2METool:
         return entropy
 
     def _detect_extension(self, data):
-        if data.startswith(b'\x89PNG\r\n\x1a\n'):
-            return '.png'
-        if data.startswith(b'GIF87a') or data.startswith(b'GIF89a'):
-            return '.gif'
-        if data.startswith(b'MThd'):
-            return '.mid'
-        if data.startswith(b'RIFF') and data[8:12] == b'WAVE':
-            return '.wav'
-        if b'\x89PNG\r\n\x1a\n' in data[:64]:
-            return '.png'
-        if b'ftyp3gp' in data[4:12]:
-            return '.3gp'
-        if data.startswith(b'\xff\xd8\xff'):
-            return '.jpg'
-        if data.startswith(b'BM'):
-            return '.bmp'
+        # Resource signatures and their expected start offsets or search range
+        signatures = [
+            (b'\x89PNG\r\n\x1a\n', '.png'),
+            (b'GIF87a', '.gif'),
+            (b'GIF89a', '.gif'),
+            (b'MThd', '.mid'),
+            (b'\xff\xd8\xff', '.jpg'),
+            (b'BM', '.bmp'),
+        ]
+
+        for sig, ext in signatures:
+            idx = data[:64].find(sig)
+            if idx != -1:
+                return ext, idx
+
+        # RIFF/WAVE
+        if b'RIFF' in data[:64]:
+            idx = data[:64].find(b'RIFF')
+            if data[idx+8:idx+12] == b'WAVE':
+                return '.wav', idx
+
+        # 3GP
+        if b'ftyp3gp' in data[:64]:
+            idx = data[:64].find(b'ftyp3gp')
+            return '.3gp', max(0, idx - 4)
 
         # Text detection
         try:
@@ -224,11 +246,11 @@ class J2METool:
                 # If entropy > 7.5, it's likely high-entropy binary (compressed or encrypted)
                 # If it's mostly printable, it's likely text/props
                 if (printable / len(sample)) > 0.6 and entropy < 7.5:
-                    return '.props'
+                    return '.props', 0
         except:
             pass
 
-        return None
+        return None, 0
 
     def _extract_resource(self, jar, file_info, output_dir):
         if file_info.is_dir():
@@ -250,7 +272,10 @@ class J2METool:
         if data.startswith(b'PK\x03\x04'):
             self.metadata['nested_archives'].append(orig_filename)
 
-        ext = self._detect_extension(data)
+        ext, offset = self._detect_extension(data)
+        if offset > 0:
+            data = data[offset:]
+
         entropy = self._calculate_entropy(data)
 
         fixed_filename = orig_filename
