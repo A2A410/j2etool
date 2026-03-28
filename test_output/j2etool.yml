@@ -1,5 +1,8 @@
 Resource-Mapping:
+  a: a.props
+  i0: i0.png
   f1_0p: f1_0p.png
+  sn8p: sn8p.props
   l2: l2.png
   hc: hc.png
   f3_0p: f3_0p.png

@@ -137,6 +137,28 @@ class J2METool:
             return '.mid'
         if data.startswith(b'RIFF') and data[8:12] == b'WAVE':
             return '.wav'
+        if b'\x89PNG\r\n\x1a\n' in data[:64]:
+            return '.png'
+        if b'ftyp3gp' in data[4:12]:
+            return '.3gp'
+        if data.startswith(b'\xff\xd8\xff'):
+            return '.jpg'
+        if data.startswith(b'BM'):
+            return '.bmp'
+
+        # Text detection
+        try:
+            # Try to see if it's mostly printable text
+            # Some J2ME props files start with \x00 (short length)
+            sample = data[:1024]
+            if len(sample) > 0:
+                printable = sum(1 for c in sample if 32 <= c <= 126 or c in b'\n\r\t')
+                # Lower threshold for files that might have some binary headers (like J2ME DataInputStream formats)
+                if (printable / len(sample)) > 0.6:
+                    return '.props'
+        except:
+            pass
+
         return None
 
     def _extract_resource(self, jar, file_info, output_dir):

@@ -875,7 +875,7 @@
     aconst_null
     putfield i->a:Ljava/io/DataInputStream;
     aload_0
-    ldc '/a'  # resource: res/a
+    ldc '/a'  # resource: res/a.props
     invokestatic a->a(Ljava/lang/String;)Ljava/io/InputStream;
     invokestatic a->a(Ljava/io/InputStream;)Ljava/io/DataInputStream;
     putfield i->a:Ljava/io/DataInputStream;
@@ -1212,7 +1212,7 @@
     invokevirtual javax/microedition/lcdui/Display->getCurrent()Ljavax/microedition/lcdui/Displayable;
     aload_0
     if_acmpne -0x15
-    ldc '/sn8p'  # resource: res/sn8p
+    ldc '/sn8p'  # resource: res/sn8p.props
     iconst_1
     ldc 'SO'
     invokestatic a->a(Ljava/lang/String;ZLjava/lang/String;)V
